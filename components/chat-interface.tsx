@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Mic, Send, Save } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LoginModal } from "@/components/login-modal"
+import { WisdomCard } from "@/components/wisdom-card"
 import { useAuth } from "@/contexts/auth-context"
 
 interface Message {
@@ -23,7 +24,7 @@ const initialMessages: Message[] = [
   {
     id: "1",
     role: "assistant",
-    content: "Hi, I'm KAAL. How can I support you today?",
+    content: "Hi, I'm KAAL.\n\nTake a moment.\n\nWhat has been on your mind lately?",
   },
 ]
 
@@ -77,8 +78,16 @@ export function ChatInterface() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-2xl mx-auto space-y-4">
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
+          {messages.map((message, idx) => (
+            <div key={message.id}>
+              <MessageBubble message={message} />
+              {/* Show wisdom card after 4 messages */}
+              {idx === 4 && (
+                <div className="my-4">
+                  <WisdomCard insight="Clarity often appears when the mind becomes still. In silence, we find what matters most." />
+                </div>
+              )}
+            </div>
           ))}
           <div ref={messagesEndRef} />
         </div>

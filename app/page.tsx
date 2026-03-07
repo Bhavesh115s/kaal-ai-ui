@@ -26,7 +26,7 @@ export default function HomePage() {
                 Talk with KAAL AI
               </h1>
               <p className="text-center text-muted-foreground mb-8 text-lg leading-relaxed">
-                A safe space to talk and reflect.
+                A quiet space to share your thoughts and find clarity.
               </p>
               
               <div className="flex justify-center">
