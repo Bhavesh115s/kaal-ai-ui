@@ -67,12 +67,30 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                     Saved Chats
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/" className="flex items-center">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Features
-                  </Link>
-                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Features</p>
+                  <div className="space-y-1">
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href="/meditation" className="flex items-center text-sm">
+                        <Sparkles className="h-3 w-3 mr-2" />
+                        Meditation
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href="/reflection" className="flex items-center text-sm">
+                        <Sparkles className="h-3 w-3 mr-2" />
+                        Reflect & Connect
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href="/events" className="flex items-center text-sm">
+                        <Sparkles className="h-3 w-3 mr-2" />
+                        Events
+                      </Link>
+                    </DropdownMenuItem>
+                  </div>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="cursor-pointer">
                   <LogOut className="h-4 w-4 mr-2" />

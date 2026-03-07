@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -62,14 +62,41 @@ function getRandomQuestions(pool: Question[], count: number): Question[] {
   return shuffled.slice(0, count)
 }
 
-// Select 4-5 random questions for this session
-const questions = getRandomQuestions(questionPool, 4)
-
 export function ReflectionAssessment() {
+  const [questions, setQuestions] = useState<Question[]>([])
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch("/api/reflection/questions")
+        if (response.ok) {
+          const data = await response.json()
+          // Select 4 random questions from the fetched pool
+          const selected = getRandomQuestions(data, 4)
+          setQuestions(selected)
+        }
+      } catch (error) {
+        console.log("[v0] Failed to fetch reflection questions:", error)
+        // Fallback to hardcoded pool
+        const selected = getRandomQuestions(questionPool, 4)
+        setQuestions(selected)
+      }
+    }
+
+    fetchQuestions()
+  }, [])
+
+  if (!questions.length) {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-4 text-center">
+        <p className="text-muted-foreground">Loading questions...</p>
+      </div>
+    )
+  }
 
   const question = questions[currentQuestion]
   const progress = ((currentQuestion + 1) / questions.length) * 100

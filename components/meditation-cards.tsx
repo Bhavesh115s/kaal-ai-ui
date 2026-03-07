@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -99,19 +99,36 @@ function MeditationIcon() {
   )
 }
 
-const meditations = [
-  {
-    id: "breathing-calm",
-    title: "Breathing Calm",
-    description: "Find peace and relaxation with a guided breathing exercise.",
-    duration: "10 mins",
-    isFree: true,
-  },
-]
-
 export function MeditationCards() {
+  const [meditations, setMeditations] = useState<any[]>([])
   const [showLoginModal, setShowLoginModal] = useState(false)
   const { isLoggedIn } = useAuth()
+
+  useEffect(() => {
+    const fetchMeditations = async () => {
+      try {
+        const response = await fetch("/api/meditations")
+        if (response.ok) {
+          const data = await response.json()
+          setMeditations(data)
+        }
+      } catch (error) {
+        console.log("[v0] Failed to fetch meditations:", error)
+        // Fallback to single free meditation
+        setMeditations([
+          {
+            id: "breathing-calm",
+            title: "Breathing Calm",
+            description: "Find peace and relaxation with a guided breathing exercise.",
+            duration: "10 mins",
+            isFree: true,
+          },
+        ])
+      }
+    }
+
+    fetchMeditations()
+  }, [])
 
   return (
     <>
