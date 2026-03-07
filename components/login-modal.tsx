@@ -21,8 +21,8 @@ interface LoginModalProps {
 export function LoginModal({ 
   open, 
   onOpenChange,
-  title = "Save your conversation",
-  message = "Would you like to save this conversation so you can come back later?"
+  title = "Save this conversation",
+  message = "Save your progress so you can continue our conversation later."
 }: LoginModalProps) {
   const [showEmailForm, setShowEmailForm] = useState(false)
   const [email, setEmail] = useState("")
@@ -155,7 +155,7 @@ export function LoginModal({
               onClick={handleClose}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              May be later
+              Maybe later
             </button>
             
             <p className="text-xs text-muted-foreground">

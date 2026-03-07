@@ -43,14 +43,14 @@ export function FeatureCards() {
     },
     {
       icon: <TherapistIcon />,
-      title: "Talk to a Psychologist",
-      description: "Connect with a trained professional for deeper support when you need it.",
-      href: "/connect",
+      title: "Reflect & Connect",
+      description: "Understand yourself better through guided reflections and connect with support.",
+      href: "/reflection",
     },
     {
       icon: <EventsIcon />,
       title: "Events",
-      description: "Answer a few questions to understand how you've been feeling lately.",
+      description: "Explore upcoming community events and wellness sessions.",
       href: "/events",
     },
   ]
@@ -58,7 +58,7 @@ export function FeatureCards() {
   return (
     <div className="w-full bg-secondary py-12 px-4">
       <p className="text-center text-sm text-muted-foreground italic mb-8">
-        If you'd like additional support, these options are available.
+        Explore more ways to support your wellbeing.
       </p>
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         {features.map((feature) => (

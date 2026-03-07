@@ -75,11 +75,14 @@ export function ReflectionResult({ stressLevel, score }: ReflectionResultProps) 
               {getMessage()}
             </p>
 
-            {/* Action buttons - different based on stress level */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+            {/* Action buttons - always show Talk to KAAL AI and Meditation */}
+            <div className={cn(
+              "flex flex-col sm:flex-row gap-3 justify-center",
+              isHighStress ? "mb-4" : "mb-6"
+            )}>
               <Link href="/chat">
                 <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 w-full sm:w-auto">
-                  Talk to Kaal AI
+                  Talk to KAAL AI
                 </Button>
               </Link>
               <Link href="/meditation">
