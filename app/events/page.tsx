@@ -5,73 +5,12 @@ import { Navbar } from "@/components/navbar"
 import { EventCard } from "@/components/event-card"
 import { cn } from "@/lib/utils"
 
-const filters = ["All", "Tech", "Spiritual"]
+const filters = ["All"]
 
-const events = [
-  {
-    id: "1",
-    title: "Youth Mental Wellness Circle Stress",
-    date: "24 th Feb 2026",
-    time: "10:30 AM SIT",
-    location: "Pune",
-    price: 450,
-    isOnline: true,
-    category: "Spiritual",
-  },
-  {
-    id: "2",
-    title: "Youth Mental Wellness Circle Stress",
-    date: "24 th Feb 2026",
-    time: "10:30 AM SIT",
-    location: "Pune",
-    price: 450,
-    isOnline: true,
-    category: "Spiritual",
-  },
-  {
-    id: "3",
-    title: "Youth Mental Wellness Circle Stress",
-    date: "24 th Feb 2026",
-    time: "10:30 AM SIT",
-    location: "Pune",
-    price: 450,
-    isOnline: true,
-    category: "Spiritual",
-  },
-  {
-    id: "4",
-    title: "Youth Mental Wellness Circle Stress",
-    date: "24 th Feb 2026",
-    time: "10:30 AM SIT",
-    location: "Pune",
-    price: 450,
-    isOnline: true,
-    category: "Tech",
-  },
-  {
-    id: "5",
-    title: "Youth Mental Wellness Circle Stress",
-    date: "24 th Feb 2026",
-    time: "10:30 AM SIT",
-    location: "Pune",
-    price: 450,
-    isOnline: true,
-    category: "Tech",
-  },
-  {
-    id: "6",
-    title: "Youth Mental Wellness Circle Stress",
-    date: "24 th Feb 2026",
-    time: "10:30 AM SIT",
-    location: "Pune",
-    price: 450,
-    isOnline: true,
-    category: "Spiritual",
-  },
-]
+const events: Array<any> = []
 
 export default function EventsPage() {
-  const [activeFilter, setActiveFilter] = useState("Spiritual")
+  const [activeFilter, setActiveFilter] = useState("All")
 
   const filteredEvents = activeFilter === "All" 
     ? events 
@@ -112,11 +51,22 @@ export default function EventsPage() {
           </div>
 
           {/* Events Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} {...event} />
-            ))}
-          </div>
+          {filteredEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-lg text-muted-foreground">
+                No upcoming events at the moment.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Check back soon for new sessions.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEvents.map((event) => (
+                <EventCard key={event.id} {...event} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </main>

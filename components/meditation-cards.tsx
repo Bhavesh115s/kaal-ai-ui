@@ -101,31 +101,10 @@ function MeditationIcon() {
 
 const meditations = [
   {
-    id: "morning-energy",
-    title: "Morning energy",
-    description: "Start your day with positive intentions and clarity for deeper support when you need it.",
-    duration: "15 mins",
-    isLocked: true,
-  },
-  {
-    id: "stress-relief",
-    title: "Stress relief",
-    description: "Release tension and find calm with this gentle guided meditation for stress relief.",
-    duration: "15 mins",
-    isLocked: true,
-  },
-  {
-    id: "deep-calm",
-    title: "Deep Calm",
-    description: "Start your day with positive intentions and clarity for deeper support when you need it.",
+    id: "breathing-calm",
+    title: "Breathing Calm",
+    description: "Find peace and relaxation with a guided breathing exercise.",
     duration: "10 mins",
-    isFree: true,
-  },
-  {
-    id: "focus-reset",
-    title: "Focus Reset",
-    description: "Clear your mind and regain concentration with this focused breathing exercise.",
-    duration: "12 mins",
     isFree: true,
   },
 ]
@@ -142,14 +121,10 @@ export function MeditationCards() {
             Guided Meditation
           </h2>
           <p className="text-center text-muted-foreground mb-6">
-            Choose an option
+            Practice mindfulness and calm
           </p>
           
-          <p className="text-center text-sm text-muted-foreground italic mb-8">
-            If you&apos;d like additional support, these options are available.
-          </p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="max-w-sm mx-auto">
             {meditations.map((meditation) => (
               <MeditationCard 
                 key={meditation.id} 

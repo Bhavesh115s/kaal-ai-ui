@@ -23,66 +23,12 @@ const initialMessages: Message[] = [
   {
     id: "1",
     role: "assistant",
-    content: "I hear you.\nIt sounds like you're feeling anxious right now.\nYou don't have to go through this alone.",
-  },
-]
-
-const sampleConversation: Message[] = [
-  {
-    id: "2",
-    role: "user",
-    content: "I've been feeling very overwhelmed lately.",
-  },
-  {
-    id: "3",
-    role: "user",
-    content: "Need some guidance",
-  },
-  {
-    id: "4",
-    role: "assistant",
-    content: "I hear you. Feeling overwhelmed can make everything feel louder and heavier than usual.\nBefore we go further, would it help to pause for a moment and take a breath together?",
-  },
-  {
-    id: "5",
-    role: "user",
-    content: "I lost hope now, not able to achieve my goal. Feeling breathlessness.",
-  },
-  {
-    id: "6",
-    role: "assistant",
-    content: "That makes sense. When a lot piles up at once, it can start to feel like there's no space to breathe.\nYou don't need to explain everything perfectly, what feels like the hardest part right now?",
-  },
-  {
-    id: "7",
-    role: "user",
-    content: "yes",
-  },
-  {
-    id: "8",
-    role: "assistant",
-    content: "",
-    sanskrit: {
-      text: "योगस्थ कुरु कर्माणि\nसङ्गं त्यक्त्वा धनञ्जय\nसिद्ध्यसिद्ध्योः समो भूत्वा\nसमत्वं योग उच्यते",
-      source: "— Bhagavad Gita 2.48",
-      translation: "This verse speaks about staying steady while doing what you can, without being overwhelmed by fear of success or failure.",
-      insight: "It reminds us that calm balance, not constant control, is what brings clarity.",
-    },
-  },
-  {
-    id: "9",
-    role: "user",
-    content: "Don't know",
-  },
-  {
-    id: "10",
-    role: "assistant",
-    content: "If you'd like, we can continue talking, or I can share a short meditation or connect you to a professional.",
+    content: "Hi, I'm KAAL. How can I support you today?",
   },
 ]
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([...initialMessages, ...sampleConversation])
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [input, setInput] = useState("")
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [messageCount, setMessageCount] = useState(0)

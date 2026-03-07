@@ -12,7 +12,8 @@ interface Question {
   options: string[]
 }
 
-const questions: Question[] = [
+// Question pool - 4-5 questions will be selected randomly for each assessment
+const questionPool: Question[] = [
   {
     id: 1,
     question: "How would you describe your overall mood lately?",
@@ -54,6 +55,15 @@ const questions: Question[] = [
     options: ["Excellent", "Good", "Fair", "Poor"],
   },
 ]
+
+// Function to select random questions from pool
+function getRandomQuestions(pool: Question[], count: number): Question[] {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+
+// Select 4-5 random questions for this session
+const questions = getRandomQuestions(questionPool, 4)
 
 export function ReflectionAssessment() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
@@ -171,20 +181,22 @@ export function ReflectionAssessment() {
 // Example: Energized and steady = 1, Mostly balanced = 2, Frequently exhausted = 3, Often drained = 4
 function calculateStressLevel(answers: Record<number, string>): { level: "Low" | "Moderate" | "High"; score: number } {
   let score = 0
+  let answeredCount = 0
   
   Object.entries(answers).forEach(([questionId, answer]) => {
-    const question = questions.find((q) => q.id === parseInt(questionId))
+    const question = questionPool.find((q) => q.id === parseInt(questionId))
     if (question) {
       // Option index + 1 gives us score 1-4
       const optionScore = question.options.indexOf(answer) + 1
       score += optionScore
+      answeredCount++
     }
   })
 
-  // Max possible score is questions.length * 4
-  // Min possible score is questions.length * 1
-  const maxScore = questions.length * 4
-  const minScore = questions.length
+  // Max possible score is answeredCount * 4
+  // Min possible score is answeredCount * 1
+  const maxScore = answeredCount * 4
+  const minScore = answeredCount
   const range = maxScore - minScore
   const normalizedScore = ((score - minScore) / range) * 100
 

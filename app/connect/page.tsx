@@ -8,86 +8,9 @@ import { Button } from "@/components/ui/button"
 import { LoginModal } from "@/components/login-modal"
 import { useAuth } from "@/contexts/auth-context"
 
-const therapists = [
-  {
-    name: "Dr. Soham Sharma",
-    specialization: "Relationship & Emotional Recovery",
-    experience: "10 years exp.",
-    rating: 4.5,
-    sessionPrice: 1500,
-    nextAvailable: "Today 4:30 PM",
-    communicationModes: ["Audio call"],
-    languages: ["English", "Tamil"],
-    quote: "I help individuals navigate relationship transitions with clarity and confidence.",
-    isRecommended: true,
-    isOnline: true,
-  },
-  {
-    name: "Dr. Soham Sharma",
-    specialization: "Relationship & Emotional Recovery",
-    experience: "10 years exp.",
-    rating: 4.5,
-    sessionPrice: 1500,
-    nextAvailable: "Today 4:30 PM",
-    communicationModes: ["Video call"],
-    languages: ["English", "Tamil"],
-    quote: "I help individuals navigate relationship transitions with clarity and confidence.",
-    isRecommended: true,
-    isOnline: true,
-  },
-  {
-    name: "Dr. Soham Sharma",
-    specialization: "Relationship & Emotional Recovery",
-    experience: "10 years exp.",
-    rating: 4.5,
-    sessionPrice: 1500,
-    nextAvailable: "Tomorrow 4:30 PM",
-    communicationModes: ["Video call"],
-    languages: ["English", "Tamil"],
-    quote: "I help individuals navigate relationship transitions with clarity and confidence.",
-    isBestMatch: true,
-    isOnline: false,
-  },
-  {
-    name: "Dr. Soham Sharma",
-    specialization: "Relationship & Emotional Recovery",
-    experience: "10 years exp.",
-    rating: 4.5,
-    sessionPrice: 1500,
-    nextAvailable: "Today 4:30 PM",
-    communicationModes: ["Audio call"],
-    languages: ["English", "Tamil"],
-    quote: "I help individuals navigate relationship transitions with clarity and confidence.",
-    isRecommended: true,
-    isOnline: true,
-  },
-  {
-    name: "Dr. Soham Sharma",
-    specialization: "Relationship & Emotional Recovery",
-    experience: "10 years exp.",
-    rating: 4.5,
-    sessionPrice: 1500,
-    nextAvailable: "Today 4:30 PM",
-    communicationModes: ["Video call"],
-    languages: ["English", "Tamil"],
-    quote: "I help individuals navigate relationship transitions with clarity and confidence.",
-    isRecommended: true,
-    isOnline: true,
-  },
-  {
-    name: "Dr. Soham Sharma",
-    specialization: "Relationship & Emotional Recovery",
-    experience: "10 years exp.",
-    rating: 4.5,
-    sessionPrice: 1500,
-    nextAvailable: "Tomorrow 4:30 PM",
-    communicationModes: ["Video call"],
-    languages: ["English", "Tamil"],
-    quote: "I help individuals navigate relationship transitions with clarity and confidence.",
-    isBestMatch: true,
-    isOnline: false,
-  },
-]
+// Therapist data will be populated from backend API
+// Placeholder for future backend integration
+const therapists: Array<any> = []
 
 export default function ConnectPage() {
   const [stressLevel, setStressLevel] = useState<string | null>(null)
@@ -136,37 +59,49 @@ export default function ConnectPage() {
           </p>
 
           {/* Therapist Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {therapists.map((therapist, idx) => (
-              <TherapistCard key={idx} {...therapist} />
-            ))}
-          </div>
-
-          {/* Bottom CTA */}
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-2">
-              Don't see the right fit? Scroll down for more options.
-            </p>
-            <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
-              <span className="w-4 h-4 rounded-full border border-muted-foreground flex items-center justify-center text-xs">?</span>
-              Not sure who to choose? That's completely okay.
-            </p>
-            <p className="text-sm text-muted-foreground mb-6">
-              Picking a therapist can feel overwhelming. Here are some options to help you take the next step.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/chat">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8">
-                  Talk to Kaal AI
-                </Button>
-              </Link>
-              <Link href="/meditation">
-                <Button variant="outline" className="rounded-full px-8">
-                  Try Meditation
-                </Button>
-              </Link>
+          {therapists.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-lg text-foreground mb-2">
+                Professional therapists will be available soon.
+              </p>
+              <p className="text-muted-foreground mb-8">
+                We're connecting you with qualified professionals to support your journey.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link href="/chat">
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8">
+                    Talk to KAAL AI
+                  </Button>
+                </Link>
+                <Link href="/meditation">
+                  <Button variant="outline" className="rounded-full px-8">
+                    Try Meditation
+                  </Button>
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                {therapists.map((therapist, idx) => (
+                  <TherapistCard key={idx} {...therapist} />
+                ))}
+              </div>
+
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-2">
+                  Don't see the right fit? Scroll down for more options.
+                </p>
+                <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 rounded-full border border-muted-foreground flex items-center justify-center text-xs">?</span>
+                  Not sure who to choose? That's completely okay.
+                </p>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Picking a therapist can feel overwhelming. Here are some options to help you take the next step.
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

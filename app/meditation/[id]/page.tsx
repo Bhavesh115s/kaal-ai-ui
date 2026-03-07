@@ -5,25 +5,12 @@ import { useRouter } from "next/navigation"
 import { X, Play, Pause, SkipBack, SkipForward } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// Meditation data will be populated from backend API
+// Placeholder for future backend integration
 const meditationData: Record<string, { title: string; duration: number; image: string }> = {
-  "morning-energy": {
-    title: "Morning energy",
-    duration: 900, // 15 minutes in seconds
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Overlay-snEUdoXf4yVuOGf3SLyji0CwsmuTqd.png",
-  },
-  "stress-relief": {
-    title: "Stress relief",
-    duration: 900,
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Overlay-snEUdoXf4yVuOGf3SLyji0CwsmuTqd.png",
-  },
-  "deep-calm": {
-    title: "Deep Calm",
-    duration: 600, // 10 minutes
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Overlay-snEUdoXf4yVuOGf3SLyji0CwsmuTqd.png",
-  },
-  "focus-reset": {
-    title: "Focus Reset",
-    duration: 720, // 12 minutes
+  "breathing-calm": {
+    title: "Breathing Calm",
+    duration: 600, // 10 minutes in seconds
     image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Overlay-snEUdoXf4yVuOGf3SLyji0CwsmuTqd.png",
   },
 }
