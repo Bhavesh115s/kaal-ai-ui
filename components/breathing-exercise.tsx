@@ -29,27 +29,13 @@ export function BreathingExercise() {
   const [omSoundPlaying, setOmSoundPlaying] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  const startSession = useCallback(() => {
-    setIsActive(true)
-    setCurrentBreath(0)
-    setPhase("inhale")
-  }, [])
-
-  const resetSession = useCallback(() => {
-    setIsActive(false)
-    setCurrentBreath(0)
-    setPhase("idle")
-    setShowReflection(false)
-    stopOmSound()
-  }, [])
-
-  const toggleOmSound = useCallback(() => {
-    if (omSoundPlaying) {
-      stopOmSound()
-    } else {
-      playOmSound()
+  const stopOmSound = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause()
     }
-  }, [omSoundPlaying])
+    setOmSoundPlaying(false)
+    console.log("[v0] OM sound stopped...")
+  }, [])
 
   const playOmSound = useCallback(() => {
     // For demo purposes, create a simple oscillator-based OM sound
@@ -64,13 +50,27 @@ export function BreathingExercise() {
     }
   }, [])
 
-  const stopOmSound = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause()
+  const toggleOmSound = useCallback(() => {
+    if (omSoundPlaying) {
+      stopOmSound()
+    } else {
+      playOmSound()
     }
-    setOmSoundPlaying(false)
-    console.log("[v0] OM sound stopped...")
+  }, [omSoundPlaying, stopOmSound, playOmSound])
+
+  const startSession = useCallback(() => {
+    setIsActive(true)
+    setCurrentBreath(0)
+    setPhase("inhale")
   }, [])
+
+  const resetSession = useCallback(() => {
+    setIsActive(false)
+    setCurrentBreath(0)
+    setPhase("idle")
+    setShowReflection(false)
+    stopOmSound()
+  }, [stopOmSound])
 
   useEffect(() => {
     if (!isActive) return
