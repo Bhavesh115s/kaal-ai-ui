@@ -54,6 +54,26 @@ const questionPool: Question[] = [
     question: "How would you rate your self-care habits?",
     options: ["Excellent", "Good", "Fair", "Poor"],
   },
+  {
+    id: 9,
+    question: "How often do you feel mentally exhausted?",
+    options: ["Rarely", "Sometimes", "Often", "Almost always"],
+  },
+  {
+    id: 10,
+    question: "Do you find it difficult to relax your thoughts?",
+    options: ["Not at all", "A little", "Moderately", "Very much"],
+  },
+  {
+    id: 11,
+    question: "How supported do you feel emotionally?",
+    options: ["Very supported", "Somewhat supported", "Rarely supported", "Not supported at all"],
+  },
+  {
+    id: 12,
+    question: "How satisfied are you with your current work-life balance?",
+    options: ["Very satisfied", "Fairly satisfied", "Somewhat dissatisfied", "Very dissatisfied"],
+  },
 ]
 
 // Function to select random questions from pool
@@ -75,14 +95,14 @@ export function ReflectionAssessment() {
         const response = await fetch("/api/reflection/questions")
         if (response.ok) {
           const data = await response.json()
-          // Select 4 random questions from the fetched pool
-          const selected = getRandomQuestions(data, 4)
+          // Select 5 random questions from the fetched pool
+          const selected = getRandomQuestions(data, 5)
           setQuestions(selected)
         }
       } catch (error) {
         console.log("[v0] Failed to fetch reflection questions:", error)
-        // Fallback to hardcoded pool
-        const selected = getRandomQuestions(questionPool, 4)
+        // Fallback to hardcoded pool - select 5 random questions
+        const selected = getRandomQuestions(questionPool, 5)
         setQuestions(selected)
       }
     }

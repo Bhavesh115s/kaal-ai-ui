@@ -104,62 +104,101 @@ export function MeditationCards() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const { isLoggedIn } = useAuth()
 
+  // Default meditation cards - first one is always free
+  const defaultMeditations = [
+    {
+      id: "breathing-calm",
+      title: "Breathing Calm",
+      description: "Find peace and relaxation with a guided breathing exercise.",
+      duration: "10 mins",
+      isFree: true,
+    },
+    {
+      id: "morning-energy",
+      title: "Morning Energy",
+      description: "Start your day with vitality and clarity.",
+      duration: "8 mins",
+      isFree: false,
+      isLocked: true,
+    },
+    {
+      id: "stress-relief",
+      title: "Stress Relief",
+      description: "Release tension and find inner peace.",
+      duration: "12 mins",
+      isFree: false,
+      isLocked: true,
+    },
+    {
+      id: "deep-calm",
+      title: "Deep Calm",
+      description: "Enter a state of profound tranquility.",
+      duration: "15 mins",
+      isFree: false,
+      isLocked: true,
+    },
+  ]
+
   useEffect(() => {
     const fetchMeditations = async () => {
       try {
         const response = await fetch("/api/meditations")
         if (response.ok) {
           const data = await response.json()
-          setMeditations(data)
+          // Ensure first meditation is always free and unlocked
+          const formattedData = data.map((med: any, idx: number) => ({
+            ...med,
+            isFree: idx === 0,
+            isLocked: idx > 0 && !isLoggedIn,
+          }))
+          setMeditations(formattedData)
         }
       } catch (error) {
         console.log("[v0] Failed to fetch meditations:", error)
-        // Fallback to single free meditation
-        setMeditations([
-          {
-            id: "breathing-calm",
-            title: "Breathing Calm",
-            description: "Find peace and relaxation with a guided breathing exercise.",
-            duration: "10 mins",
-            isFree: true,
-          },
-        ])
+        // Use default meditations
+        setMeditations(defaultMeditations)
       }
     }
 
     fetchMeditations()
-  }, [])
+  }, [isLoggedIn])
 
   return (
     <>
       <div className="w-full bg-secondary py-12 px-4">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-xl font-semibold text-center text-foreground mb-2">
-            Guided Meditation
+            Guided Meditations
           </h2>
-          <p className="text-center text-muted-foreground mb-6">
-            Practice mindfulness and calm
+          <p className="text-center text-muted-foreground mb-8">
+            Choose a meditation to practice mindfulness and calm
           </p>
           
-          <div className="max-w-sm mx-auto">
-            {meditations.map((meditation) => (
-              <MeditationCard 
-                key={meditation.id} 
-                {...meditation}
-                // If user is logged in, unlock all premium content
-                isLocked={meditation.isLocked && !isLoggedIn}
-                onLockedClick={() => setShowLoginModal(true)}
-              />
-            ))}
-          </div>
+          {meditations.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+              {meditations.map((meditation) => (
+                <MeditationCard 
+                  key={meditation.id} 
+                  {...meditation}
+                  // If user is logged in, unlock all premium content
+                  isLocked={meditation.isLocked && !isLoggedIn}
+                  onLockedClick={() => setShowLoginModal(true)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading meditations...</p>
+            </div>
+          )}
         </div>
       </div>
 
       <LoginModal 
         open={showLoginModal} 
         onOpenChange={setShowLoginModal}
-        title="Unlock Premium Content"
-        message="Sign in to access all meditation sessions and save your progress."
+        title="Unlock Premium Meditations"
+        message="Sign in to access all meditation sessions, save your progress, and track your wellness journey."
       />
     </>
   )

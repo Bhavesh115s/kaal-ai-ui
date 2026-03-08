@@ -12,6 +12,7 @@ interface Message {
   id: string
   role: "user" | "assistant"
   content: string
+  isLoading?: boolean
   sanskrit?: {
     text: string
     source: string
@@ -57,20 +58,33 @@ export function ChatInterface() {
     setInput("")
     setMessageCount((prev) => prev + 1)
 
-    // Show login modal after a few messages (only if not logged in)
-    if (messageCount >= 3 && !isLoggedIn) {
+    // Show login modal after 2-3 messages (only if not logged in)
+    if (messageCount >= 1 && messageCount < 2 && !isLoggedIn) {
       setTimeout(() => setShowLoginModal(true), 1000)
     }
 
-    // Simulate AI response
+    // Add loading message with KAAL animation
+    const loadingMessage: Message = {
+      id: (Date.now()).toString(),
+      role: "assistant",
+      content: "",
+      isLoading: true,
+    }
+    setMessages((prev) => [...prev, loadingMessage])
+
+    // Simulate AI response with delay
     setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Thank you for sharing that with me. Remember, it's okay to feel this way. Would you like to explore some calming techniques together, or would you prefer to continue talking?",
-      }
-      setMessages((prev) => [...prev, aiResponse])
-    }, 1500)
+      setMessages((prev) => {
+        const updated = [...prev]
+        const lastIndex = updated.length - 1
+        updated[lastIndex] = {
+          ...updated[lastIndex],
+          content: "Thank you for sharing that with me. Remember, it's okay to feel this way. Would you like to explore some calming techniques together, or would you prefer to continue talking?",
+          isLoading: false,
+        }
+        return updated
+      })
+    }, 2500)
   }
 
   return (
@@ -138,13 +152,31 @@ export function ChatInterface() {
         <p className="text-xs text-muted-foreground">It listens with care and may suggest professional help when needed.</p>
       </div>
 
-      <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      <LoginModal 
+        open={showLoginModal} 
+        onOpenChange={setShowLoginModal}
+        title="Would you like to save your conversations with KAAL?"
+        message="Save your progress so you can continue our conversation later and track your wellness journey."
+      />
     </div>
   )
 }
 
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user"
+
+  if (message.isLoading) {
+    return (
+      <div className={cn("flex", "justify-start")}>
+        <div className={cn("rounded-2xl px-4 py-3", "bg-secondary text-foreground")}>
+          <div className="flex items-center gap-2">
+            <KAALLoadingSpinner />
+            <span className="text-sm text-muted-foreground">KAAL is thinking...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
@@ -179,5 +211,26 @@ function MessageBubble({ message }: { message: Message }) {
         )}
       </div>
     </div>
+  )
+}
+
+function KAALLoadingSpinner() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="animate-spin"
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" strokeOpacity="0.2" />
+      <path
+        d="M12 3C7.03 3 3 7.03 3 12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   )
 }

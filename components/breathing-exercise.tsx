@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { Volume2, VolumeX } from "lucide-react"
+import { DailyGitaWisdom } from "@/components/daily-gita-wisdom"
 
 type BreathingPattern = {
   name: string
@@ -15,7 +17,6 @@ type BreathingPattern = {
 const patterns: BreathingPattern[] = [
   { name: "Gentle", pattern: "4-4-4", inhale: 4, hold: 4, exhale: 4 },
   { name: "Deep", pattern: "5-5-8", inhale: 5, hold: 5, exhale: 8 },
-  { name: "Deep", pattern: "5-5-8", inhale: 5, hold: 5, exhale: 8 },
 ]
 
 export function BreathingExercise() {
@@ -25,6 +26,8 @@ export function BreathingExercise() {
   const [phase, setPhase] = useState<"idle" | "inhale" | "hold" | "exhale">("idle")
   const [isActive, setIsActive] = useState(false)
   const [showReflection, setShowReflection] = useState(false)
+  const [omSoundPlaying, setOmSoundPlaying] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   const startSession = useCallback(() => {
     setIsActive(true)
@@ -37,6 +40,36 @@ export function BreathingExercise() {
     setCurrentBreath(0)
     setPhase("idle")
     setShowReflection(false)
+    stopOmSound()
+  }, [])
+
+  const toggleOmSound = useCallback(() => {
+    if (omSoundPlaying) {
+      stopOmSound()
+    } else {
+      playOmSound()
+    }
+  }, [omSoundPlaying])
+
+  const playOmSound = useCallback(() => {
+    // For demo purposes, create a simple oscillator-based OM sound
+    // In production, you would load an actual OM audio file
+    try {
+      // Simple implementation using Web Audio API or HTML5 audio
+      // This is a placeholder - actual implementation would use audio files
+      console.log("[v0] OM sound playing...")
+      setOmSoundPlaying(true)
+    } catch (error) {
+      console.log("[v0] Error playing OM sound:", error)
+    }
+  }, [])
+
+  const stopOmSound = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+    }
+    setOmSoundPlaying(false)
+    console.log("[v0] OM sound stopped...")
   }, [])
 
   useEffect(() => {
@@ -179,27 +212,48 @@ export function BreathingExercise() {
           )}
         />
 
-        {/* Meditation figure */}
+        {/* Center content - Meditation figure or OM button */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <MeditationFigure />
+          {!omSoundPlaying ? (
+            <button
+              onClick={toggleOmSound}
+              className="text-5xl hover:scale-110 transition-transform"
+              title="Click to play OM sound"
+            >
+              ॐ
+            </button>
+          ) : (
+            <div className="text-5xl animate-pulse">ॐ</div>
+          )}
         </div>
 
-        {/* Counter and phase */}
+        {/* Counter and phase - positioned at bottom */}
         <div className="absolute bottom-8 left-0 right-0 text-center">
           <p className="text-2xl font-semibold text-primary">
-            {currentBreath}/{breathCount}
+            {currentBreath} / {breathCount}
           </p>
           <p className="text-sm text-primary capitalize">
             {phase === "idle" ? "Ready" : phase}
           </p>
         </div>
+
+        {/* OM Sound indicator */}
+        {omSoundPlaying && (
+          <button
+            onClick={toggleOmSound}
+            className="absolute top-4 right-4 flex items-center gap-1 bg-primary/20 text-primary px-3 py-1 rounded-full text-xs transition-all hover:bg-primary/30"
+          >
+            <Volume2 className="h-3 w-3" />
+            OM Playing
+          </button>
+        )}
       </div>
 
       {/* Start/Reset Button */}
       {!showReflection && (
         <Button
           onClick={isActive ? resetSession : startSession}
-          className="bg-muted hover:bg-muted/80 text-foreground rounded-full px-8"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8"
         >
           {isActive ? "Stop" : "Start session"}
         </Button>
@@ -209,6 +263,11 @@ export function BreathingExercise() {
       {showReflection && (
         <ReflectionPrompt onClose={resetSession} />
       )}
+
+      {/* Hidden audio element for OM sound */}
+      <audio ref={audioRef} loop />
+    </div>
+  )
     </div>
   )
 }
@@ -230,38 +289,55 @@ function MeditationFigure() {
 }
 
 function ReflectionPrompt({ onClose }: { onClose: () => void }) {
+  const [showGita, setShowGita] = useState(false)
+
   return (
-    <div className="bg-card rounded-2xl p-6 shadow-lg max-w-sm text-center">
-      <h3 className="font-semibold text-foreground mb-2">
-        Would you like to reflect for a moment?
-      </h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Notice how your body feels.<br />
-        Do not suddenly move elements.
-      </p>
-      <div className="flex flex-wrap justify-center gap-2 mb-4">
-        <a href="/chat">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-            Talk to Kaal
-          </Button>
-        </a>
-        <a href="/chat">
-          <Button variant="outline" className="rounded-full">
-            Explore Gita Wisdom
-          </Button>
-        </a>
-        <a href="/reflection">
-          <Button variant="outline" className="rounded-full">
-            Take Reflection Test
-          </Button>
-        </a>
-      </div>
-      <button
-        onClick={onClose}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        Skip for now
-      </button>
+    <div className="max-w-2xl mx-auto w-full">
+      {showGita ? (
+        <div className="flex flex-col items-center gap-4">
+          <DailyGitaWisdom onReflectionSubmit={() => setShowGita(false)} />
+          <button
+            onClick={onClose}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Continue to home
+          </button>
+        </div>
+      ) : (
+        <div className="bg-card rounded-2xl p-6 shadow-lg text-center">
+          <h3 className="font-semibold text-foreground mb-2">
+            Session Complete
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            Notice how your body feels.<br />
+            Take a moment to acknowledge this calm.
+          </p>
+          <div className="space-y-3 mb-4">
+            <button
+              onClick={() => setShowGita(true)}
+              className="w-full py-2 px-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-sm transition-colors"
+            >
+              Explore Gita Wisdom
+            </button>
+            <a href="/chat" className="block">
+              <button className="w-full py-2 px-4 bg-muted hover:bg-muted/80 text-foreground rounded-full text-sm transition-colors">
+                Talk to KAAL
+              </button>
+            </a>
+            <a href="/reflection" className="block">
+              <button className="w-full py-2 px-4 border border-border text-foreground hover:bg-muted rounded-full text-sm transition-colors">
+                Take Reflection Assessment
+              </button>
+            </a>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Skip for now
+          </button>
+        </div>
+      )}
     </div>
   )
 }

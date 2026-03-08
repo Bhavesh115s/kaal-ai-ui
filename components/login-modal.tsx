@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/auth-context"
+import { UserPreferenceModal } from "@/components/user-preference-modal"
 
 interface LoginModalProps {
   open: boolean
@@ -28,13 +29,19 @@ export function LoginModal({
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
   const [emailSent, setEmailSent] = useState(false)
-  const { login } = useAuth()
+  const [showPreferenceModal, setShowPreferenceModal] = useState(false)
+  const { login, preferences } = useAuth()
 
   const handleContinueWithGoogle = () => {
     // Simulate Google login
     const userName = "User"
     login({ name: userName, initial: userName[0].toUpperCase(), email: "user@gmail.com" })
-    handleClose()
+    // Show preference modal only if not already set
+    if (!preferences.preferenceSet) {
+      setShowPreferenceModal(true)
+    } else {
+      handleClose()
+    }
   }
 
   const handleContinueWithEmail = () => {
@@ -45,7 +52,12 @@ export function LoginModal({
     if (email && name) {
       // Simulate email login
       login({ name, initial: name[0].toUpperCase(), email })
-      handleClose()
+      // Show preference modal only if not already set
+      if (!preferences.preferenceSet) {
+        setShowPreferenceModal(true)
+      } else {
+        handleClose()
+      }
     } else if (email) {
       setEmailSent(true)
     }
@@ -59,10 +71,24 @@ export function LoginModal({
     setName("")
   }
 
+  const handlePreferenceModalClose = () => {
+    setShowPreferenceModal(false)
+    handleClose()
+  }
+
+  if (showPreferenceModal) {
+    return (
+      <UserPreferenceModal 
+        open={showPreferenceModal}
+        onOpenChange={handlePreferenceModalClose}
+      />
+    )
+  }
+
   if (emailSent) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-<DialogContent className="sm:max-w-md bg-card border-0 rounded-2xl" data-dialog-content>
+        <DialogContent className="sm:max-w-md bg-card border-0 rounded-2xl" data-dialog-content>
           <DialogHeader className="text-center">
             <DialogTitle className="text-xl font-semibold">Check your email</DialogTitle>
           </DialogHeader>
