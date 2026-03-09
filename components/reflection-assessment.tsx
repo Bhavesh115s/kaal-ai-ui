@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
+import { useReflectionQuestions } from "@/hooks/useReflectionQuestions"
 
 interface Question {
   id: number
@@ -83,34 +84,16 @@ function getRandomQuestions(pool: Question[], count: number): Question[] {
 }
 
 export function ReflectionAssessment() {
-  const [questions, setQuestions] = useState<Question[]>([])
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const router = useRouter()
+  const { questions, loading } = useReflectionQuestions()
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await fetch("/api/reflection/questions")
-        if (response.ok) {
-          const data = await response.json()
-          // Select 5 random questions from the fetched pool
-          const selected = getRandomQuestions(data, 5)
-          setQuestions(selected)
-        }
-      } catch (error) {
-        console.log("[v0] Failed to fetch reflection questions:", error)
-        // Fallback to hardcoded pool - select 5 random questions
-        const selected = getRandomQuestions(questionPool, 5)
-        setQuestions(selected)
-      }
-    }
+  // Use fetched questions or fallback to local pool
+  const displayQuestions = questions.length > 0 ? questions : getRandomQuestions(questionPool, 5)
 
-    fetchQuestions()
-  }, [])
-
-  if (!questions.length) {
+  if (loading || !displayQuestions.length) {
     return (
       <div className="w-full max-w-2xl mx-auto px-4 text-center">
         <p className="text-muted-foreground">Loading questions...</p>
@@ -118,8 +101,8 @@ export function ReflectionAssessment() {
     )
   }
 
-  const question = questions[currentQuestion]
-  const progress = ((currentQuestion + 1) / questions.length) * 100
+  const question = displayQuestions[currentQuestion]
+  const progress = ((currentQuestion + 1) / displayQuestions.length) * 100
 
   const handleSelect = (option: string) => {
     setSelectedOption(option)
@@ -130,7 +113,7 @@ export function ReflectionAssessment() {
 
     setAnswers((prev) => ({ ...prev, [question.id]: selectedOption }))
     
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < displayQuestions.length - 1) {
       setCurrentQuestion((prev) => prev + 1)
       setSelectedOption(null)
     } else {

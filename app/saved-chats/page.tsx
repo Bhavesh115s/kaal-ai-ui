@@ -1,36 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent } from "@/components/ui/card"
 import { MessageSquare } from "lucide-react"
-
-interface SavedChat {
-  id: string
-  title: string
-  preview: string
-  timestamp: string
-}
+import { useSavedChats } from "@/hooks/useSavedChats"
 
 export default function SavedChatsPage() {
-  const [savedChats, setSavedChats] = useState<SavedChat[]>([])
-
-  useEffect(() => {
-    const fetchSavedChats = async () => {
-      try {
-        const response = await fetch("/api/saved-chats")
-        if (response.ok) {
-          const data = await response.json()
-          setSavedChats(data)
-        }
-      } catch (error) {
-        console.log("[v0] Failed to fetch saved chats:", error)
-        setSavedChats([])
-      }
-    }
-
-    fetchSavedChats()
-  }, [])
+  const { savedChats, loading } = useSavedChats()
 
   return (
     <main className="min-h-screen flex flex-col bg-background">

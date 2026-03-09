@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,6 +8,7 @@ import { Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/auth-context"
 import { LoginModal } from "@/components/login-modal"
+import { useMeditations } from "@/hooks/useMeditations"
 
 interface MeditationCardProps {
   id: string
@@ -100,9 +101,9 @@ function MeditationIcon() {
 }
 
 export function MeditationCards() {
-  const [meditations, setMeditations] = useState<any[]>([])
   const [showLoginModal, setShowLoginModal] = useState(false)
   const { isLoggedIn } = useAuth()
+  const { meditations: rawMeditations, loading } = useMeditations()
 
   // Default meditation cards - first one is always free
   const defaultMeditations = [
@@ -139,29 +140,14 @@ export function MeditationCards() {
     },
   ]
 
-  useEffect(() => {
-    const fetchMeditations = async () => {
-      try {
-        const response = await fetch("/api/meditations")
-        if (response.ok) {
-          const data = await response.json()
-          // Ensure first meditation is always free and unlocked
-          const formattedData = data.map((med: any, idx: number) => ({
-            ...med,
-            isFree: idx === 0,
-            isLocked: idx > 0 && !isLoggedIn,
-          }))
-          setMeditations(formattedData)
-        }
-      } catch (error) {
-        console.log("[v0] Failed to fetch meditations:", error)
-        // Use default meditations
-        setMeditations(defaultMeditations)
-      }
-    }
-
-    fetchMeditations()
-  }, [isLoggedIn])
+  // Format meditations to ensure first is always free
+  const meditations = rawMeditations.length > 0 
+    ? rawMeditations.map((med: any, idx: number) => ({
+        ...med,
+        isFree: idx === 0,
+        isLocked: idx > 0 && !isLoggedIn,
+      }))
+    : defaultMeditations
 
   return (
     <>
@@ -174,13 +160,12 @@ export function MeditationCards() {
             Choose a meditation to practice mindfulness and calm
           </p>
           
-          {meditations.length > 0 ? (
+          {!loading && meditations.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
               {meditations.map((meditation) => (
                 <MeditationCard 
                   key={meditation.id} 
                   {...meditation}
-                  // If user is logged in, unlock all premium content
                   isLocked={meditation.isLocked && !isLoggedIn}
                   onLockedClick={() => setShowLoginModal(true)}
                 />
@@ -188,7 +173,7 @@ export function MeditationCards() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">Loading meditations...</p>
+              <p className="text-muted-foreground">{loading ? "Loading meditations..." : "No meditations available"}</p>
             </div>
           )}
         </div>

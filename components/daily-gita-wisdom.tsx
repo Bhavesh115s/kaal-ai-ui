@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Sparkles } from "lucide-react"
+import { useGitaVerse } from "@/hooks/useGitaVerse"
 import type { ReactNode } from "react"
 
 interface GitaVerse {
@@ -64,36 +65,12 @@ interface DailyGitaWisdomProps {
 }
 
 export function DailyGitaWisdom({ onReflectionSubmit }: DailyGitaWisdomProps) {
-  const [verse, setVerse] = useState<GitaVerse | null>(null)
   const [showReflection, setShowReflection] = useState(false)
   const [reflectionAnswer, setReflectionAnswer] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchVerse = async () => {
-      try {
-        // Try to fetch from API
-        const response = await fetch("/api/gita/daily-verse")
-        if (response.ok) {
-          const data = await response.json()
-          setVerse(data)
-        } else {
-          // Fallback to random verse from pool
-          const randomVerse = gitaVersesPool[Math.floor(Math.random() * gitaVersesPool.length)]
-          setVerse(randomVerse)
-        }
-      } catch (error) {
-        console.log("[v0] Failed to fetch Gita verse:", error)
-        // Use random verse from pool
-        const randomVerse = gitaVersesPool[Math.floor(Math.random() * gitaVersesPool.length)]
-        setVerse(randomVerse)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchVerse()
-  }, [])
+  const { verse, loading: isLoading } = useGitaVerse()
+  
+  // Fallback to random verse from pool if API fails
+  const displayVerse = verse || gitaVersesPool[Math.floor(Math.random() * gitaVersesPool.length)]
 
   const handleReflectionSubmit = () => {
     if (reflectionAnswer.trim()) {
@@ -106,64 +83,47 @@ export function DailyGitaWisdom({ onReflectionSubmit }: DailyGitaWisdomProps) {
   if (isLoading) {
     return (
       <Card className="bg-card border border-border rounded-2xl w-full max-w-2xl">
-        <CardContent className="p-8 text-center">
-          <p className="text-muted-foreground">Loading daily wisdom...</p>
+        <CardContent className="p-8">
+          <p className="text-muted-foreground text-center">Loading verse...</p>
         </CardContent>
       </Card>
     )
   }
 
-  if (!verse) {
-    return null
-  }
-
   return (
-    <div className="w-full max-w-2xl space-y-4">
-      <Card className="bg-gradient-to-br from-secondary/40 to-secondary/20 border border-secondary/50 rounded-2xl overflow-hidden">
-        <CardContent className="p-8">
-          {/* Header */}
-          <div className="flex items-center gap-2 mb-6">
-            <Sparkles className="h-5 w-5 text-primary/70" />
-            <h3 className="text-sm font-semibold text-primary/70 uppercase tracking-wide">
-              Daily Gita Insight
-            </h3>
-          </div>
+    <Card className="bg-card border border-border rounded-2xl w-full max-w-2xl">
+      <CardContent className="p-8">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-6">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Daily Wisdom</h2>
+        </div>
 
-          {/* Verse Section */}
-          <div className="mb-8">
-            <p className="text-xs text-muted-foreground mb-4 uppercase tracking-widest">
-              {verse.chapterVerse}
+        {/* Verse Section */}
+        <div className="bg-secondary/50 rounded-xl p-6 mb-6 space-y-4">
+          <p className="text-sm font-medium text-muted-foreground">
+            {displayVerse.chapterVerse}
+          </p>
+          <p className="text-lg italic text-foreground font-serif">
+            {displayVerse.sanskrit}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {displayVerse.translation}
+          </p>
+          <div className="border-t border-border pt-4">
+            <p className="text-sm text-foreground leading-relaxed">
+              {displayVerse.meaning}
             </p>
-            
-            {/* Sanskrit */}
-            <p className="text-lg italic text-foreground/80 mb-6 leading-relaxed font-serif">
-              "{verse.sanskrit}"
-            </p>
-
-            {/* Translation */}
-            <div className="space-y-2 mb-6 pl-4 border-l-2 border-primary/50">
-              <p className="text-sm font-medium text-primary/80">Translation:</p>
-              <p className="text-sm text-foreground leading-relaxed">
-                "{verse.translation}"
-              </p>
-            </div>
-
-            {/* Meaning */}
-            <div className="space-y-2 bg-primary/5 rounded-lg p-4 mb-6">
-              <p className="text-sm font-medium text-foreground">Meaning:</p>
-              <p className="text-sm text-foreground/80 leading-relaxed">
-                {verse.meaning}
-              </p>
-            </div>
-
-            {/* Reflection Question */}
-            <div className="bg-muted/40 rounded-lg p-4">
-              <p className="text-sm font-medium text-foreground mb-2">Reflect:</p>
-              <p className="text-sm text-foreground/80 italic">
-                "{verse.reflection}"
-              </p>
-            </div>
           </div>
+        </div>
+
+        {/* Reflection Question */}
+        <div className="bg-muted/40 rounded-lg p-4 mb-6">
+          <p className="text-sm font-medium text-foreground mb-2">Reflect:</p>
+          <p className="text-sm text-foreground/80 italic">
+            "{displayVerse.reflection}"
+          </p>
+        </div>
 
           {/* Reflection Input */}
           {showReflection ? (

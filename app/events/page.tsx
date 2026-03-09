@@ -1,32 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { EventCard } from "@/components/event-card"
+import { useEvents } from "@/hooks/useEvents"
 import { cn } from "@/lib/utils"
 
 const filters = ["All"]
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<Array<any>>([])
   const [activeFilter, setActiveFilter] = useState("All")
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("/api/events")
-        if (response.ok) {
-          const data = await response.json()
-          setEvents(data)
-        }
-      } catch (error) {
-        console.log("[v0] Failed to fetch events:", error)
-        setEvents([])
-      }
-    }
-
-    fetchEvents()
-  }, [])
+  const { events, loading } = useEvents()
 
   const filteredEvents = activeFilter === "All" 
     ? events 
