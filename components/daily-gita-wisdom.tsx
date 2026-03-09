@@ -166,6 +166,6 @@ export function DailyGitaWisdom({ onReflectionSubmit }: DailyGitaWisdomProps) {
           )}
         </CardContent>
       </Card>
-    </div>
+    )
   )
 }
