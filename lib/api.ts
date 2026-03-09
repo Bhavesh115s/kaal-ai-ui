@@ -28,10 +28,19 @@ class ApiClient {
     this.apiKey = apiKey
   }
 
-  private getHeaders(additionalHeaders?: Record<string, string>) {
-    return {
+  private getHeaders(additionalHeaders?: Record<string, string>, sessionId?: string) {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "X-API-Key": this.apiKey,
+    }
+    
+    // Add session ID for anonymous users
+    if (sessionId) {
+      headers["X-Session-ID"] = sessionId
+    }
+    
+    return {
+      ...headers,
       ...additionalHeaders,
     }
   }
@@ -41,13 +50,13 @@ class ApiClient {
    */
   async get<T = any>(
     endpoint: string,
-    options?: RequestInit
+    options?: RequestInit & { sessionId?: string }
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`
       const response = await fetch(url, {
         method: "GET",
-        headers: this.getHeaders(),
+        headers: this.getHeaders({}, options?.sessionId),
         ...options,
       })
 
@@ -73,14 +82,14 @@ class ApiClient {
   async post<T = any>(
     endpoint: string,
     body?: any,
-    options?: RequestInit
+    options?: RequestInit & { sessionId?: string }
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`
       const response = await fetch(url, {
         method: "POST",
-        headers: this.getHeaders(),
-        body: body ? JSON.stringify(body) : undefined,
+        headers: this.getHeaders({}, options?.sessionId),
+        body: JSON.stringify(body),
         ...options,
       })
 

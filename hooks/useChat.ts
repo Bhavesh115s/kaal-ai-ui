@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react"
+import { useAuth } from "@/contexts/auth-context"
 
 interface ChatMessage {
   id: string
@@ -19,6 +20,7 @@ export function useChat(): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { sessionId, user } = useAuth()
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -37,15 +39,26 @@ export function useChat(): UseChatReturn {
         }
         setMessages((prev) => [...prev, userMessage])
 
+        // Prepare headers with session ID for anonymous users
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          "X-API-Key": "andai",
+        }
+        
+        // Add session ID for anonymous users
+        if (!user && sessionId) {
+          headers["X-Session-ID"] = sessionId
+        }
+
         // Send to API
         const response = await fetch("/api/chat", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify({
             message: content,
             chat_history: messages,
+            user_id: user?.id,
+            session_id: sessionId,
           }),
         })
 
