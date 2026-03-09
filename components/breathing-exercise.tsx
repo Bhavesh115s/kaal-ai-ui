@@ -272,16 +272,16 @@ export function BreathingExercise() {
 
 function MeditationFigure() {
   return (
-    <svg width="100" height="120" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="100" height="120" viewBox={"0 0 100 120"} fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Head */}
       <circle cx="50" cy="25" r="12" stroke="#d4a373" strokeWidth="2" fill="none" />
       {/* Body */}
-      <path d="M50 37 L50 65" stroke="#d4a373" strokeWidth="2" />
+      <path d={"M50 37 L50 65"} stroke="#d4a373" strokeWidth="2" />
       {/* Arms */}
-      <path d="M30 70 Q40 55 50 60 Q60 55 70 70" stroke="#d4a373" strokeWidth="2" fill="none" />
+      <path d={"M30 70 Q40 55 50 60 Q60 55 70 70"} stroke="#d4a373" strokeWidth="2" fill="none" />
       {/* Legs crossed */}
-      <path d="M35 85 Q45 75 50 80 Q55 75 65 85" stroke="#d4a373" strokeWidth="2" fill="none" />
-      <path d="M25 90 Q40 80 50 85 Q60 80 75 90" stroke="#d4a373" strokeWidth="2" fill="none" />
+      <path d={"M35 85 Q45 75 50 80 Q55 75 65 85"} stroke="#d4a373" strokeWidth="2" fill="none" />
+      <path d={"M25 90 Q40 80 50 85 Q60 80 75 90"} stroke="#d4a373" strokeWidth="2" fill="none" />
     </svg>
   )
 }
