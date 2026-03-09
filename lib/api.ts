@@ -1,10 +1,17 @@
 /**
  * Centralized API helper for all frontend API requests
  * Handles communication with Next.js API routes which forward to FastAPI backend
+ * 
+ * Architecture:
+ * Frontend Components → Next.js API Routes (/api/*) → FastAPI Backend
+ * 
+ * All requests to /api/* routes are forwarded to FastAPI backend with X-API-Key header
+ * API_KEY header value: "andai" (configurable via environment variables)
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "andai"
+const NEXT_API_BASE = "/api"
 
 interface ApiResponse<T = any> {
   data?: T
@@ -158,8 +165,69 @@ class ApiClient {
   }
 }
 
-// Export singleton instance
-export const api = new ApiClient()
+// Export singleton instance (configured for Next.js API routes)
+export const api = new ApiClient(NEXT_API_BASE, API_KEY)
 
 // Export class for testing purposes
 export { ApiClient }
+
+/**
+ * FastAPI Endpoint Helpers
+ * Use these functions for common API operations
+ * All requests go through Next.js API routes which forward to FastAPI backend
+ */
+
+// Chat endpoints
+export const chatApi = {
+  sendMessage: (message: string, chatHistory?: any[]) =>
+    api.post("/chat", { message, chat_history: chatHistory }),
+  getHistory: () => api.get("/chat"),
+}
+
+// Events endpoints
+export const eventsApi = {
+  getAll: () => api.get("/events"),
+  create: (eventData: any) => api.post("/events", eventData),
+  getById: (id: string) => api.get(`/events/${id}`),
+  register: (eventId: string, registrationData: any) =>
+    api.post(`/events/${eventId}/register`, registrationData),
+}
+
+// Meditation endpoints
+export const meditationApi = {
+  getAll: () => api.get("/meditations"),
+  getById: (id: string) => api.get(`/meditations/${id}`),
+  recordSession: (meditationId: string, duration: number) =>
+    api.post("/meditations/session", { meditation_id: meditationId, duration }),
+}
+
+// Psychologist endpoints
+export const psychologistApi = {
+  getAll: () => api.get("/psychologist"),
+  bookSession: (booking: any) => api.post("/psychologist", booking),
+  getAvailability: (psychologistId: string) =>
+    api.get(`/psychologist/${psychologistId}/availability`),
+}
+
+// Self-reflection endpoints
+export const reflectionApi = {
+  submitAssessment: (answers: any) =>
+    api.post("/reflection", { answers }),
+  getHistory: () => api.get("/reflection"),
+  getAnalysis: (reflectionId: string) =>
+    api.get(`/reflection/${reflectionId}/analysis`),
+}
+
+// Gita wisdom endpoints
+export const gitaApi = {
+  getDailyVerse: () => api.get("/gita/daily-verse"),
+  getVerse: (verseId: string) => api.get(`/gita/${verseId}`),
+}
+
+// Saved chats endpoints
+export const savedChatsApi = {
+  getAll: () => api.get("/saved-chats"),
+  save: (chatData: any) => api.post("/saved-chats", chatData),
+  getById: (id: string) => api.get(`/saved-chats/${id}`),
+  delete: (id: string) => api.delete(`/saved-chats/${id}`),
+}
