@@ -220,10 +220,10 @@ export function BreathingExercise() {
               className="text-5xl hover:scale-110 transition-transform"
               title="Click to play OM sound"
             >
-              ॐ
+              {"ॐ"}
             </button>
           ) : (
-            <div className="text-5xl animate-pulse">ॐ</div>
+            <div className="text-5xl animate-pulse">{"ॐ"}</div>
           )}
         </div>
 
