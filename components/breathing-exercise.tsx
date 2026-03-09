@@ -268,8 +268,6 @@ export function BreathingExercise() {
       <audio ref={audioRef} loop />
     </div>
   )
-    </div>
-  )
 }
 
 function MeditationFigure() {
