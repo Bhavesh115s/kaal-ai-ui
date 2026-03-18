@@ -16,21 +16,27 @@ interface Message {
 
 const initialMessages: Message[] = [
   {
-    id: "1",
+    id: "init",
     role: "assistant",
-    content: "Hi, I'm KAAL.\n\nTake a moment.\n\nWhat has been on your mind lately?",
+    content:
+      "I'm KAAL. This is a space to pause and reflect. What has been on your mind lately?",
   },
 ]
 
 export function ChatInterface() {
 
-  const [messages, setMessages] = useState<Message[]>(initialMessages)
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [messageCount, setMessageCount] = useState(0)
+  const [isRecording, setIsRecording] = useState(false)
+  const [isWaitingResponse, setIsWaitingResponse] = useState(false)
 
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const { isLoggedIn } = useAuth()
+  const { isLoggedIn, user } = useAuth()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -40,118 +46,241 @@ export function ChatInterface() {
     scrollToBottom()
   }, [messages])
 
+  useEffect(() => {
+
+    const openChat = localStorage.getItem("kaal_open_chat")
+
+    if (openChat) {
+
+      const chat = JSON.parse(openChat)
+
+      localStorage.setItem("kaal_active_chat", chat.id)
+
+      setMessages([
+        {
+          id: crypto.randomUUID(),
+          role: "user",
+          content: chat.title,
+        },
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: chat.preview,
+        },
+      ])
+
+      localStorage.removeItem("kaal_open_chat")
+
+    } else {
+
+      localStorage.removeItem("kaal_active_chat")
+      setMessages(initialMessages)
+
+    }
+
+  }, [])
+
+  const saveChatLocal = (chat: any) => {
+
+    let chats = JSON.parse(
+      localStorage.getItem("kaal_saved_chats") || "[]"
+    )
+
+    let activeChatId = localStorage.getItem("kaal_active_chat")
+
+    if (!activeChatId) {
+
+      activeChatId = crypto.randomUUID()
+
+      localStorage.setItem("kaal_active_chat", activeChatId)
+
+      chats.unshift({
+        id: activeChatId,
+        title: chat.title,
+        preview: chat.preview,
+        timestamp: chat.timestamp,
+      })
+
+    } else {
+
+      chats = chats.map((c: any) => {
+
+        if (c.id === activeChatId) {
+          return {
+            ...c,
+            preview: chat.preview,
+            timestamp: chat.timestamp,
+          }
+        }
+
+        return c
+      })
+    }
+
+    chats = chats.slice(0,4)
+
+    localStorage.setItem(
+      "kaal_saved_chats",
+      JSON.stringify(chats)
+    )
+  }
+
+  const startRecording = async () => {
+
+    if (isRecording) {
+      mediaRecorderRef.current?.stop()
+      setIsRecording(false)
+      return
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+    const mediaRecorder = new MediaRecorder(stream)
+
+    mediaRecorderRef.current = mediaRecorder
+    audioChunksRef.current = []
+
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunksRef.current.push(event.data)
+    }
+
+    mediaRecorder.onstop = async () => {
+
+      const blob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+
+      const response = await fetch("/api/stt", {
+        method: "POST",
+        body: blob,
+      })
+
+      const data = await response.json()
+
+      if (data.text) {
+        setInput(data.text)
+      }
+    }
+
+    mediaRecorder.start()
+    setIsRecording(true)
+  }
 
   const handleSend = async () => {
 
-    if (!input.trim()) return
+    if (!input.trim() || isWaitingResponse) return
 
-    const sessionId =
-      localStorage.getItem("kaal_session") ||
-      crypto.randomUUID()
-
-    localStorage.setItem("kaal_session", sessionId)
+    const text = input
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       role: "user",
-      content: input,
+      content: text,
     }
 
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+    setMessageCount((prev) => prev + 1)
+    setIsWaitingResponse(true)
+
+    if (messageCount >= 1 && messageCount < 2 && !isLoggedIn) {
+      setTimeout(() => setShowLoginModal(true), 1000)
+    }
+
+    const loadingId = crypto.randomUUID()
+
     const loadingMessage: Message = {
-      id: (Date.now() + 1).toString(),
+      id: loadingId,
       role: "assistant",
       content: "",
       isLoading: true,
     }
 
-    // 🔥 FIX: add both messages together
-    setMessages((prev) => [...prev, userMessage, loadingMessage])
-
-    setInput("")
+    setMessages((prev) => [...prev, loadingMessage])
 
     try {
 
-      const res = await fetch(
-  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/chat`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": "andai"
-    },
-    body: JSON.stringify({
-      session_id: sessionId,
-      message: userMessage.content
-    })
-  }
-)
+      let sessionId = localStorage.getItem("kaal_session")
 
-      if (!res.ok) {
-        throw new Error("API request failed")
+      if (!sessionId) {
+        sessionId = crypto.randomUUID()
+        localStorage.setItem("kaal_session", sessionId)
       }
 
-      const data = await res.json()
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-name": user?.name || "",
+          "x-user-email": user?.email || "",
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: text,
+        }),
+      })
 
-      setMessages((prev) => {
+      const data = await response.json()
 
-        const updated = [...prev]
+      const reply = data.reply || "KAAL couldn't respond right now."
 
-        const lastIndex = updated.length - 1
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === loadingId
+            ? {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: reply,
+              }
+            : msg
+        )
+      )
 
-        updated[lastIndex] = {
-          ...updated[lastIndex],
-          content: data.reply || "I'm here with you. Tell me more.",
-          isLoading: false,
-        }
+      setIsWaitingResponse(false)
 
-        return updated
-
+      saveChatLocal({
+        title: text.slice(0,40),
+        preview: reply.slice(0,80),
+        timestamp: new Date().toISOString(),
       })
 
     } catch (error) {
 
-      console.error("Chat API error:", error)
+      console.error("Chat error:", error)
 
-      setMessages((prev) => {
+      setIsWaitingResponse(false)
 
-        const updated = [...prev]
-
-        const lastIndex = updated.length - 1
-
-        updated[lastIndex] = {
-          ...updated[lastIndex],
-          content: "KAAL is currently unavailable.",
-          isLoading: false,
-        }
-
-        return updated
-
-      })
-
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === loadingId
+            ? {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: "⚠️ Server error. Please try again.",
+              }
+            : msg
+        )
+      )
     }
-
   }
-
 
   return (
     <div className="flex flex-col h-full">
 
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-3 py-6">
 
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="w-full max-w-2xl mx-auto space-y-6">
 
           {messages.map((message, idx) => (
-
             <div key={message.id}>
 
               <MessageBubble message={message} />
 
               {idx === 4 && (
-                <WisdomCard insight="Clarity often appears when the mind becomes still. In silence, we find what matters most." />
+                <div className="my-6">
+                  <WisdomCard insight="Clarity often appears when the mind becomes still. In silence, we find what matters most." />
+                </div>
               )}
 
             </div>
-
           ))}
 
           <div ref={messagesEndRef} />
@@ -160,49 +289,66 @@ export function ChatInterface() {
 
       </div>
 
+      <div className="border-t border-border bg-background p-3">
 
-      <div className="border-t border-border bg-background p-4">
-
-        <div className="max-w-2xl mx-auto">
+        <div className="w-full max-w-2xl mx-auto">
 
           {!isLoggedIn && messages.length > 3 && (
             <button
               onClick={() => setShowLoginModal(true)}
-              className="w-full mb-3 py-2 px-4 bg-secondary rounded-full text-sm flex items-center justify-center gap-2"
+              className="w-full mb-3 py-2 px-3 bg-secondary rounded-full text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-2"
             >
               <Save className="h-4 w-4" />
               Save chat to continue later
             </button>
           )}
 
-          <div className="flex items-center gap-2 bg-card rounded-full border border-border px-4 py-2">
+          <div className="flex items-center gap-2 bg-card rounded-full border border-border px-3 py-2">
 
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Type here ..I am listening."
+              placeholder="Share what's on your mind..."
               className="flex-1 bg-transparent text-sm outline-none"
             />
 
-            <button className="text-muted-foreground">
+            <button
+              onClick={startRecording}
+              className={cn(
+                "text-muted-foreground hover:text-foreground",
+                isRecording && "text-red-500"
+              )}
+            >
               <Mic className="h-5 w-5" />
             </button>
 
             <button
               onClick={handleSend}
-              className="text-primary"
+              disabled={isWaitingResponse}
+              className={cn(
+                "text-primary",
+                isWaitingResponse && "opacity-40 cursor-not-allowed"
+              )}
             >
               <Send className="h-5 w-5" />
             </button>
 
           </div>
 
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            You can share as much or as little as you want.
+          </p>
+
         </div>
 
       </div>
 
+      <div className="text-center py-4">
+        <p className="text-xs text-muted-foreground">
+          KAAL AI is not a doctor or therapist.
+        </p>
+      </div>
 
       <LoginModal
         open={showLoginModal}
@@ -215,27 +361,23 @@ export function ChatInterface() {
   )
 }
 
-
 function MessageBubble({ message }: { message: Message }) {
 
   const isUser = message.role === "user"
 
   if (message.isLoading) {
-
     return (
-
       <div className="flex justify-start">
-
-        <div className="rounded-2xl px-4 py-3 bg-secondary">
-
-          <span className="text-sm">KAAL is thinking...</span>
-
+        <div className="max-w-[70%] rounded-2xl px-4 py-3 bg-secondary shadow-sm">
+          <span className="text-sm text-muted-foreground flex gap-1">
+            KAAL is thinking
+            <span className="animate-bounce">.</span>
+            <span className="animate-bounce delay-100">.</span>
+            <span className="animate-bounce delay-200">.</span>
+          </span>
         </div>
-
       </div>
-
     )
-
   }
 
   return (
@@ -244,12 +386,21 @@ function MessageBubble({ message }: { message: Message }) {
 
       <div
         className={cn(
-          "max-w-[80%] rounded-2xl px-4 py-3",
-          isUser ? "bg-muted" : "bg-secondary"
+          "max-w-[85%] sm:max-w-[65%] rounded-2xl px-4 py-3 shadow-sm",
+          isUser
+            ? "bg-muted text-foreground"
+            : "bg-secondary text-foreground"
         )}
       >
 
-        <p className="text-sm whitespace-pre-line">
+        {!isUser && (
+         <p className="text-[8px] font-medium tracking-wider text-muted-foreground/70 mb-1">
+        
+         </p>
+
+        )}
+
+        <p className="text-sm whitespace-pre-line leading-relaxed">
           {message.content}
         </p>
 
@@ -258,5 +409,4 @@ function MessageBubble({ message }: { message: Message }) {
     </div>
 
   )
-
 }
