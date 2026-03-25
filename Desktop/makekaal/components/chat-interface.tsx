@@ -305,13 +305,19 @@ export function ChatInterface() {
 
           <div className="flex items-center gap-2 bg-card rounded-full border border-border px-3 py-2">
 
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Share what's on your mind..."
-              className="flex-1 bg-transparent text-sm outline-none"
-            />
+         <input
+         type="text"
+          value={input}
+         onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+           e.preventDefault()
+           handleSend() 
+           }
+            }}
+             placeholder="Share what's on your mind..."
+           className="flex-1 bg-transparent text-sm outline-none"
+           />
 
             <button
               onClick={startRecording}

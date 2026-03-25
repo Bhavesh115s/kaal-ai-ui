@@ -24,41 +24,35 @@ interface LoginModalProps {
 export function LoginModal({
   open,
   onOpenChange,
-  title = "Save your conversation with KAAL",
-  message = "Sign in to keep your chats and continue anytime.",
+  title = "Continue with KAAL",
+  message = "Sign in to save your conversations and continue anytime.",
 }: LoginModalProps) {
 
-  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [emailSent, setEmailSent] = useState(false)
-
   const [showPreferenceModal, setShowPreferenceModal] = useState(false)
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const { loginWithEmail, preferences } = useAuth()
+  const { loginWithEmail, loginWithGoogle } = useAuth()
 
-  /* ---------------- SAVE USER ---------------- */
+  /* ---------------- GOOGLE LOGIN ---------------- */
 
-  const saveUser = (userEmail: string, userName: string) => {
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name: userName,
-        email: userEmail,
-      })
-    )
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true)
+      await loginWithGoogle()
+    } catch {
+      setError("Google login failed")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  /* ---------------- SEND EMAIL ---------------- */
+  /* ---------------- EMAIL LOGIN ---------------- */
 
   const handleSendEmail = async () => {
-
-    if (!name) {
-      setError("Please enter your name")
-      return
-    }
 
     if (!email || !email.includes("@")) {
       setError("Please enter a valid email")
@@ -69,36 +63,22 @@ export function LoginModal({
     setIsLoading(true)
 
     try {
-
-      saveUser(email, name)
-
       await loginWithEmail(email)
-
       setEmailSent(true)
-
-    } catch (err) {
-
+    } catch {
       setError("Failed to send login link")
-
     } finally {
-
       setIsLoading(false)
-
     }
-
   }
 
   /* ---------------- CLOSE ---------------- */
 
   const handleClose = () => {
-
     onOpenChange(false)
-
-    setName("")
     setEmail("")
     setError("")
     setEmailSent(false)
-
   }
 
   /* ---------------- PREF MODAL ---------------- */
@@ -120,25 +100,18 @@ export function LoginModal({
   /* ---------------- EMAIL SENT ---------------- */
 
   if (emailSent) {
-
     return (
-
       <Dialog open={open} onOpenChange={handleClose}>
-
         <DialogContent className="sm:max-w-md bg-card border-0 rounded-2xl">
-
           <DialogHeader className="text-center">
-
             <DialogTitle className="text-xl font-semibold">
               Check your email
             </DialogTitle>
-
           </DialogHeader>
 
           <div className="text-center py-4">
-
             <p className="text-muted-foreground mb-6">
-              We sent you a secure login link.
+              We’ve sent you a secure login link.
             </p>
 
             <Button
@@ -148,85 +121,91 @@ export function LoginModal({
             >
               Resend Email
             </Button>
-
           </div>
-
         </DialogContent>
-
       </Dialog>
-
     )
-
   }
 
-  /* ---------------- LOGIN FORM ---------------- */
+  /* ---------------- LOGIN UI ---------------- */
 
   return (
-
     <Dialog open={open} onOpenChange={handleClose}>
-
       <DialogContent className="sm:max-w-md bg-card border-0 rounded-2xl">
-
         <DialogHeader className="text-center">
-
-          <div className="flex justify-center mb-2">
-            <span className="text-2xl">💬</span>
-          </div>
-
           <DialogTitle className="text-xl font-semibold">
             {title}
           </DialogTitle>
 
+          <p className="text-sm text-muted-foreground mt-1">
+            {message}
+          </p>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-5 py-4">
 
-          <Input
-            type="text"
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="rounded-full"
-          />
-
-          <Input
-            type="email"
-            placeholder="Your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-full"
-          />
-
-          {error && (
-            <p className="text-xs text-destructive text-center">
-              {error}
-            </p>
-          )}
+          {/* GOOGLE BUTTON → PRIMARY */}
 
           <Button
-            onClick={handleSendEmail}
+            onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium"
           >
-            {isLoading ? "Sending..." : "Send Magic Link"}
+            Continue with Google
           </Button>
+
+          {/* DIVIDER */}
+
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground">OR</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
+          {/* EMAIL SECTION */}
+
+          <div className="space-y-3">
+
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="rounded-full"
+            />
+
+            {error && (
+              <p className="text-xs text-destructive text-center">
+                {error}
+              </p>
+            )}
+
+            {/* EMAIL → OUTLINE */}
+
+            <Button
+              onClick={handleSendEmail}
+              disabled={isLoading}
+              variant="outline"
+              className="w-full rounded-full font-medium"
+            >
+              {isLoading ? "Sending..." : "Continue with Email"}
+            </Button>
+
+          </div>
+
+          {/* FOOTER FIX */}
 
           <button
             onClick={handleClose}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="text-sm text-muted-foreground hover:text-foreground text-center w-full"
           >
-            Maybe later
+            Continue without signing
           </button>
-
-          <p className="text-xs text-muted-foreground text-center">
-            You can keep chatting without signing in.
-          </p>
 
         </div>
 
       </DialogContent>
 
     </Dialog>
-
   )
 }
